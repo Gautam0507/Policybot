@@ -23,7 +23,6 @@ class PDFProcessor:
         )
 
     def _group_texts_by_page(self, elements):
-        """Group text elements by page number into single documents per page"""
         grouped = defaultdict(list)
         for element in elements:
             if hasattr(element, "text") and element.text and element.text.strip():
@@ -163,7 +162,6 @@ if __name__ == "__main__":
     def format_response_to_text(
         success: bool, message: str = "", error: str = ""
     ) -> str:
-        """Format response to custom text format for PDF processing"""
         try:
             if success:
                 content = f"SUCCESS\n{message}"

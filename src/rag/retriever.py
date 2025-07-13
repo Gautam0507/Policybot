@@ -25,7 +25,7 @@ class Retriever:
             top_k = self.top_k
 
         try:
-            embedding_model, device = load_embedding_model()
+            embedding_model, device = load_embedding_model("cpu")
             query_embedding = np.array(
                 embedding_model.embed_query(query), dtype=np.float32
             )
@@ -57,7 +57,6 @@ class Retriever:
 if __name__ == "__main__":
 
     def format_chunks_to_text(chunks: List[str]) -> str:
-        """Format chunks to custom text format"""
         try:
             formatted_chunks = []
             for chunk in chunks:
@@ -92,7 +91,6 @@ if __name__ == "__main__":
             f.write(result_text)
 
     except Exception as e:
-
         error_result = format_chunks_to_text([])
         try:
             with open(output_file, "w", encoding="utf-8") as f:

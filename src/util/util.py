@@ -1,11 +1,10 @@
-import json
 import os
-import re
 import subprocess
 import tempfile
 import time
 from typing import Any, Dict, List
 
+import chromadb
 import streamlit as st
 import torch
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -14,8 +13,9 @@ from src.config import cfg
 from src.logger import logger
 
 
-def load_embedding_model():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+def load_embedding_model(device=None):
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
     embedding_model = HuggingFaceEmbeddings(
         model_name=cfg.EMBEDDING_MODEL_NAME,
         model_kwargs={
@@ -38,7 +38,6 @@ def free_embedding_model(embedding_model, device):
 
 
 def parse_chunks_from_text(content: str) -> List[str]:
-    """Parse chunks from custom format text"""
     try:
 
         if cfg.RESPONSE_START not in content or cfg.RESPONSE_END not in content:
@@ -71,7 +70,6 @@ def parse_chunks_from_text(content: str) -> List[str]:
 
 
 def format_chunks_to_text(chunks: List[str]) -> str:
-    """Format chunks to custom text format"""
     try:
         formatted_chunks = []
         for i, chunk in enumerate(chunks):
@@ -86,7 +84,6 @@ def format_chunks_to_text(chunks: List[str]) -> str:
 
 
 def parse_response_from_text(content: str) -> Dict[str, Any]:
-    """Parse response from custom format text for PDF processing"""
     try:
 
         if cfg.RESPONSE_START not in content or cfg.RESPONSE_END not in content:
@@ -117,7 +114,6 @@ def parse_response_from_text(content: str) -> Dict[str, Any]:
 
 
 def format_response_to_text(success: bool, message: str = "", error: str = "") -> str:
-    """Format response to custom text format for PDF processing"""
     try:
         if success:
             content = f"SUCCESS\n{message}"
@@ -262,6 +258,26 @@ def process_pdf(file_name: str) -> Dict[str, Any]:
         st.error(error_msg)
         logger.error(f"Error running PDF processor: {e}")
         return {"success": False, "error": error_msg}
+
+
+def get_pdf_files_with_embeddings():
+    os.makedirs(cfg.DATA_DIR, exist_ok=True)
+    client = chromadb.PersistentClient(path=cfg.DB_DIR)
+    collection = client.get_or_create_collection(name=cfg.COLLECTION_NAME)
+    pdf_files = [f for f in os.listdir(cfg.DATA_DIR) if f.lower().endswith(".pdf")]
+    valid_files = []
+    for file in pdf_files:
+        existing = collection.get(where={"source": file}, limit=1)
+        if existing and existing.get("ids"):
+            valid_files.append(file)
+    return valid_files
+
+
+def has_embeddings(file_name: str) -> bool:
+    client = chromadb.PersistentClient(path=cfg.DB_DIR)
+    collection = client.get_or_create_collection(name=cfg.COLLECTION_NAME)
+    existing = collection.get(where={"source": file_name}, limit=1)
+    return bool(existing and existing.get("ids"))
 
 
 if __name__ == "__main__":
