@@ -4,7 +4,7 @@ import os
 class Config:
     ALLOWED_EXTENSIONS = ["pdf"]
 
-    BASE_DIR = os.path.dirname(__file__)
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DATA_DIR = os.path.join(BASE_DIR, "data")
     DB_DIR = os.path.join(BASE_DIR, "db")
 
@@ -13,12 +13,17 @@ class Config:
     EMBEDDING_MODEL_NAME = "Alibaba-NLP/gte-multilingual-base"
     EMBEDDING_MODEL_KWARGS = {"trust_remote_code": True}
     ENCODE_KWARGS = {"normalize_embeddings": True}
-    BREAKPOINT_THRESHOLD_TYPE = "gradient"
-    BREAKPOINT_THRESHOLD_AMOUNT = 95.0
-
+    BREAKPOINT_THRESHOLD_TYPE = "standard_deviation"
+    BREAKPOINT_THRESHOLD_AMOUNT = 1.0
     MAX_HISTORY_MESSAGES = 3
     MODEL_NAME = "llama3.1:8b"
     TEMPERATURE = 0.1
+    TOP_K = 5
+
+    CHUNK_SEPARATOR = "###$$$%%%^^^&&&***"
+    CHUNK_PREFIX = "CHUNK_"
+    RESPONSE_START = "RESPONSE_START" + CHUNK_SEPARATOR
+    RESPONSE_END = CHUNK_SEPARATOR + "RESPONSE_END"
 
     SYSTEM_PROMPT = """
 You are a highly precise and factual AI assistant. Your function is to extract and present information SOLELY from the provided context. Your responses must be accurate, direct, and completely confined to the given text.

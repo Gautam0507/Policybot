@@ -28,3 +28,6 @@ def get_logger(name: str = "app") -> logging.Logger:
 
 
 logger = get_logger("app")
+
+if __name__ == "__main__":
+    pass
