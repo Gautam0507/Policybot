@@ -49,11 +49,13 @@ You are a highly precise and factual AI assistant. Your function is to extract a
 5.  **Verify:** Confirm that your answer is 100% accurate, derived *only* from the context, and meets all specified formatting.
 """
 
-    OLLAMA_PORT = 11434
+    OLLAMA_PORT = os.environ.get("OLLAMA_PORT", "11434")
+    OLLAMA_IP = os.environ.get("OLLAMA_IP", "host.docker.internal")
+
     if os.environ.get("IN_DOCKER") == "1":
-        OLLAMA_URL = f"http://172.17.0.1:{OLLAMA_PORT}"
+        OLLAMA_URL = f"http://{OLLAMA_IP}:{OLLAMA_PORT}"
     else:
-        OLLAMA_URL = f"http://localhost:{OLLAMA_PORT}"
+        OLLAMA_URL = f"http://localhost:11434"
 
 
 cfg = Config()

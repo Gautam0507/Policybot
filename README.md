@@ -1,74 +1,140 @@
-# Policy Chatbot - Setup Instructions
+# RAG_app
 
-## 1. Clone the Repository
+A Retrieval-Augmented Generation (RAG) application for extracting and answering questions from Policy documents using LLMs.
 
-```sh
-git clone <your-repo-url>
-cd RAG_app
-```
+**Python version used for this project: 3.12.11**
 
 ---
 
-## 2. Create and Activate a Virtual Environment
+## Installation & Usage
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-```
+<details>
+<summary><strong>Docker Installation </strong></summary>
 
----
+1. **Clone the repository**
 
-## 3. Install Python Dependencies
+   ```bash
+   git clone https://github.com/Gautam0507/Policybot.git
+   cd Policybot
+   ```
 
-```sh
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+2. **Host Ollama on Your Machine**
 
----
+   - Ensure Ollama is running on your host at port `11434`.
+   - If you don't have Ollama installed, follow instructions at [https://ollama.com/download](https://ollama.com/download).
+   - Start Ollama with:
+     ```bash
+     OLLAMA_HOST=0.0.0.0 ollama serve
+     ```
+   - (Optional) Pull the model, e.g.:
+     ```bash
+     ollama pull llama3.1:8b
+     ```
+   - The app inside Docker will connect to Ollama using the special host IP `172.17.0.1:11434` (Linux) or `host.docker.internal:11434` (if supported).
 
-## 4. Install System Dependencies for PDF Processing
+3. **Enable GPU Access**
 
-Make sure you have the following system packages installed (required by `unstructured`):
+   - Install NVIDIA Container Toolkit (for GPU support):
+     ```bash
+     sudo apt-get install -y nvidia-container-toolkit
+     sudo systemctl restart docker
+     ```
+   - Edit `/etc/docker/daemon.json` to include:
+     ```json
+     {
+       "runtimes": {
+         "nvidia": {
+           "path": "nvidia-container-runtime",
+           "runtimeArgs": []
+         }
+       }
+     }
+     ```
+   - Restart Docker after editing:
+     ```bash
+     sudo systemctl restart docker
+     ```
 
-**Ubuntu/Debian:**
+4. **Start and Build the App**
 
-```sh
-sudo apt-get update
-sudo apt-get install -y poppler-utils tesseract-ocr libmagic1 build-essential
-```
+   ```bash
+   docker-compose up --build
+   ```
 
----
+   This will:
 
-## 5. Run Ollama Server and Pull Llama 3.1 8B Model
+   - Build the Docker image.
+   - Start the app at [http://localhost:8501](http://localhost:8501).
 
-**Start the Ollama server (listening on all interfaces):**
+5. **Access the logs**
 
-```sh
-OLLAMA_HOST=0.0.0.0 ollama serve
-```
+   - To enter the running Docker container and view logs:
 
-**Pull the Llama 3.1 8B model:**
+     ```bash
+     docker exec -it rag_app tail -f app.log
+     ```
 
-```sh
-ollama pull llama3.1:8b
-```
+</details>
 
----
+<details>
+<summary><strong>Python Virtual Environment Installation</strong></summary>
 
-## 6. Run the Application
+1. **Clone the repository**
 
-```sh
-streamlit run streamlit_app.py
-```
+   ```bash
+   git clone https://github.com/Gautam0507/Policybot.git
+   cd Policybot
+   ```
 
-Then open your browser and go to [http://localhost:8501](http://localhost:8501)
+2. **Create and activate a virtual environment**
 
----
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
-## 7. Notes
+3. **Install dependencies**
 
-- Make sure your `config.py` is set to use the correct Ollama model name (e.g., `llama3:8b`).
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+4. **Host Ollama on Your Machine**
+
+   - Ensure Ollama is running on your host at port `11434`.
+   - If you don't have Ollama installed, follow instructions at [https://ollama.com/download](https://ollama.com/download).
+   - Start Ollama with:
+     ```bash
+     OLLAMA_HOST=0.0.0.0 ollama serve
+     ```
+   - (Optional) Pull the model, e.g.:
+     ```bash
+     ollama pull llama3.1:8b
+     ```
+
+5. **Start the app**
+
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+
+   The app will be available at [http://localhost:8501](http://localhost:8501).
+
+6. **Access the logs**
+
+   - To view logs from the project root directory:
+     ```bash
+     tail -f app.log
+     ```
+
+   </details>
+
+## Notes
+
+- For Docker, the app expects Ollama to be running on the host and accessible from the container.
+- If you encounter network issues, check your Docker network settings and ensure the correct host IP is used.
+- Make sure your `config.py` is set to use the correct Ollama model name (e.g., `llama3.1:8b`).
 - If you change the model in `config.py`, pull it with `ollama pull <model-name>`.
 - Ollama must be running for the chatbot to generate answers.
 - Uploaded PDFs and embeddings are stored in the [`data`](data) directory.
