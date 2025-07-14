@@ -15,7 +15,11 @@ class LLM_Interface:
     def __init__(self) -> None:
         self.system_prompt = cfg.SYSTEM_PROMPT
         self.max_history_messages = cfg.MAX_HISTORY_MESSAGES
-        self.llm = OllamaLLM(model=cfg.MODEL_NAME, temperature=cfg.TEMPERATURE)
+        self.llm = OllamaLLM(
+            model=cfg.MODEL_NAME,
+            temperature=cfg.TEMPERATURE,
+            base_url=cfg.OLLAMA_URL,
+        )
         self.chain = self._create_chain()
 
     def _create_chain(self):
